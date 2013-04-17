@@ -5,6 +5,8 @@
 #include <string.h>
 #include <libgen.h>
 #include <getopt.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #include "ltsv4c.h"
 
@@ -88,16 +90,15 @@ _names_destroy(label_names_t *self)
 }
 
 static int
-_stdin(int fd) {
-    fd_set fdset;
-    struct timeval timeout;
+_stdin(void) {
+    struct stat st;
 
-    FD_ZERO(&fdset);
-    FD_SET(fd, &fdset);
-    timeout.tv_sec = 0;
-    timeout.tv_usec = 0;
+    if (fstat(STDIN_FILENO, &st) == 0 &&
+        S_ISFIFO(st.st_mode)) {
+        return 1;
+    }
 
-    return select(fd+1, &fdset, NULL, NULL, &timeout);
+    return 0;
 }
 
 static int
@@ -225,7 +226,7 @@ main(int argc, char **argv)
             status = _ltsv_print(ltsv, color, verbose, names);
             ltsv_free(ltsv);
         }
-    } else if (_stdin(0)) {
+    } else if (_stdin()) {
         //stdin
         printf("--\n");
         while (1) {
