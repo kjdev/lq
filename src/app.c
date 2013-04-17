@@ -10,6 +10,8 @@
 
 #include "ltsv4c.h"
 
+#define BUFFER_SIZE 4096
+
 #define print_line(color, label, value) ((color) ?  printf("%c[1;34m%s%c[0m: %c[32m%s%c[0m\n", 27, label, 27, 27, value, 27) : printf("%s: %s\n", label, value))
 
 typedef struct {
@@ -167,6 +169,7 @@ _usage(char *arg, char *message)
     printf("OPTIONS:\n");
     printf("  --file    [ -f ] <filename>          input file name.\n");
     printf("  --label   [ -l ] <name1[,name2 ...]> label names.\n");
+    printf("  --buffer  [ -b ] <size>              read line buffer size.\n");
     printf("  --color   [ -c ]                     output ansi color.\n");
     printf("  --verbose [ -v ]                     output null value.\n");
 
@@ -179,6 +182,7 @@ int
 main(int argc, char **argv)
 {
     int status = 0, color = 0, verbose = 0;
+    size_t size = BUFFER_SIZE;
     char *filename = NULL, *label = NULL;
 
     LTSV *ltsv = NULL;
@@ -188,6 +192,7 @@ main(int argc, char **argv)
     const struct option long_options[] = {
         { "file", 1, NULL, 'f' },
         { "label", 1, NULL, 'l' },
+        { "buffer", 1, NULL, 'b' },
         { "color", 0, NULL, 'c' },
         { "verbose", 0, NULL, 'v' },
         { "help", 0, NULL, 'h' },
@@ -201,6 +206,9 @@ main(int argc, char **argv)
                 break;
             case 'l':
                 label = optarg;
+                break;
+            case 'b':
+                size = atol(optarg);
                 break;
             case 'c':
                 color = 1;
@@ -229,12 +237,15 @@ main(int argc, char **argv)
     } else if (_stdin()) {
         //stdin
         printf("--\n");
+        if (size == 0) {
+            size = BUFFER_SIZE;
+        }
         while (1) {
-            char buf[BUFSIZ];
+            char buf[size+1];
             size_t len;
 
-            memset(buf, '\0', BUFSIZ);
-            len = read(0, buf, BUFSIZ);
+            memset(buf, '\0', size+1);
+            len = read(0, buf, size);
             if (len == 0) {
                 break;
             }
