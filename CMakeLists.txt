@@ -7,7 +7,7 @@ SET(CMAKE_C_FLAGS_DEBUG "-Wall -W -g")
 # project
 SET(APP lq)
 PROJECT(${APP})
-SET(VERSION "0.1.2")
+SET(VERSION "0.1.3")
 
 # application
 ADD_EXECUTABLE(${APP} src/app.c src/ltsv4c.c)

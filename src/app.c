@@ -242,11 +242,9 @@ main(int argc, char **argv)
         }
         while (1) {
             char buf[size+1];
-            size_t len;
 
             memset(buf, '\0', size+1);
-            len = read(0, buf, size);
-            if (len == 0) {
+            if (fgets(buf, size, stdin) == NULL) {
                 break;
             }
 
